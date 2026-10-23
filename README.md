@@ -39,6 +39,12 @@
 - Live vitals telemetry dashboard: Heart rate (BPM) with panic tachycardia spike auto-alert (>125 BPM), Blood Oxygen (SpO2 %), Battery level, and 6-Axis Gyroscope Fall Detection.
 - **🔘 HARDWARE WATCH SOS BUTTON**: Simulates pressing the physical watch crown/button to automatically broadcast live GPS tracking SMS, auto-call police helpline (`1091`), and launch safe route autopilot.
 
+### 6. 👥 Emergency Contacts Management & Responsive UI
+- **1-Tap Contact Removal**: Full CRUD management of personal emergency contacts with red delete icon button and interactive confirmation alert dialog.
+- **Persistent Synchronization**: Instant two-way sync across `SharedPreferences` (`wosafe_contacts_json` and `homesafe_emergency_contacts`) and UI sheets.
+- **Permanent Rescue Anchors**: Official emergency units (*Singapen Athiradi Padai 1091*, *Tambaram Police*, *Global Hospital*, *Women Safe Cab*) remain permanently accessible.
+- **Zero-Overflow Adaptive Route Cards**: Responsive `Expanded` layout and flexible badges eliminating RenderFlex overflow across all device screen resolutions.
+
 ---
 
 ## 🚀 Tech Stack
@@ -61,10 +67,10 @@
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/lakshmipriya2262/wosafe--.git
+git clone https://github.com/lakshmipriya2262/wosafe.git
 
 # Navigate to project directory
-cd wosafe--
+cd wosafe
 
 # Install dependencies
 flutter pub get
@@ -78,11 +84,3 @@ flutter run
 ## 📄 License & Attribution
 Developed with pride by **PIXAL TECH HUB (Team ID: 24IPD010)**, Agni College of Technology.  
 Protected under the MIT License.
-
-<<<<<<< HEAD
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
->>>>>>> 7035039 (Initial commit)
-=======
->>>>>>> 544bd1e (docs: update README with WOSAFE architecture, features, and setup guide)
