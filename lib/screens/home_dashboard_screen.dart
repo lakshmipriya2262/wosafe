@@ -195,7 +195,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       }
 
       // If no stored contacts found, load from AuthProvider
-      if (loaded.isEmpty && mounted) {
+      if (contactsJson == null && loaded.isEmpty && mounted) {
         final auth = Provider.of<AuthProvider>(context, listen: false);
         final userContacts = auth.currentUser?.emergencyContacts;
         if (userContacts != null && userContacts.isNotEmpty) {
@@ -1452,14 +1452,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     ),
                   ),
 
-                ..._dynamicContacts.map((c) => _buildContactTile(
-                  name: c['name'] ?? '',
-                  phone: c['phone'] ?? '',
-                  tag: c['relation'] ?? 'Contact',
-                  loc: c['location'] ?? 'Chennai',
-                  av: (c['name'] != null && c['name']!.isNotEmpty) ? c['name']![0].toUpperCase() : 'C',
-                  isDark: isDark,
-                )),
+                ..._dynamicContacts.map((c) {
+                  final isOfficial = c['name']!.startsWith('🦁') ||
+                      c['name']!.startsWith('👮') ||
+                      c['name']!.startsWith('🏥') ||
+                      c['name']!.startsWith('🚖');
+                  return _buildContactTile(
+                    name: c['name'] ?? '',
+                    phone: c['phone'] ?? '',
+                    tag: c['relation'] ?? 'Contact',
+                    loc: c['location'] ?? 'Chennai',
+                    av: (c['name'] != null && c['name']!.isNotEmpty) ? c['name']![0].toUpperCase() : 'C',
+                    isDark: isDark,
+                    onDelete: !isOfficial
+                        ? () => _confirmDeleteEmergencyContact(context, c, setSheetState)
+                        : null,
+                  );
+                }),
 
                 const SizedBox(height: 14),
                 ElevatedButton.icon(
@@ -1552,6 +1561,77 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     );
   }
 
+  Future<void> _confirmDeleteEmergencyContact(
+    BuildContext context,
+    Map<String, String> contact,
+    StateSetter setSheetState,
+  ) async {
+    final name = contact['name'] ?? 'Contact';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: const [
+            Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+            SizedBox(width: 8),
+            Text('Remove Contact?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to remove "$name" (${contact['phone']}) from your Emergency Contacts?\n\nThey will no longer receive emergency alerts when SOS is triggered.',
+          style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Remove', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _dynamicContacts.removeWhere((c) => c['name'] == contact['name'] && c['phone'] == contact['phone']);
+      });
+      setSheetState(() {});
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final userDefined = _dynamicContacts
+            .where((c) => !c['name']!.startsWith('🦁') && !c['name']!.startsWith('👮') && !c['name']!.startsWith('🏥') && !c['name']!.startsWith('🚖'))
+            .toList();
+        final jsonString = json.encode(userDefined);
+        await prefs.setString('wosafe_contacts_json', jsonString);
+        await prefs.setString('homesafe_emergency_contacts', jsonString);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFFEF4444),
+              content: Text('✓ "$name" removed from Emergency Contacts'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('Error deleting contact: $e');
+      }
+    }
+  }
+
   Widget _buildContactTile({
     required String name,
     required String phone,
@@ -1559,10 +1639,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     required String loc,
     required String av,
     required bool isDark,
+    VoidCallback? onDelete,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -1582,8 +1663,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               Text('$tag • $loc', style: const TextStyle(fontSize: 9.5, color: Color(0xFF94A3B8))),
             ]),
           ),
+          if (onDelete != null)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 22),
+              tooltip: 'Remove Contact',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              onPressed: onDelete,
+            ),
           IconButton(
-            icon: const Icon(Icons.phone_rounded, color: Color(0xFFE91E63)),
+            icon: const Icon(Icons.phone_rounded, color: Color(0xFFE91E63), size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             onPressed: () {
               makePhoneCall(phone, context);
             },

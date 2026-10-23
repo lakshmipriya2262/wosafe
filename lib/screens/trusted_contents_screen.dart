@@ -54,7 +54,7 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
       }
 
       // Check AuthProvider if list is still empty
-      if (loaded.isEmpty && mounted) {
+      if (jsonStr == null && loaded.isEmpty && mounted) {
         final auth = Provider.of<AuthProvider>(context, listen: false);
         final userContacts = auth.currentUser?.emergencyContacts;
         if (userContacts != null && userContacts.isNotEmpty) {
@@ -450,9 +450,19 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
             ),
           ),
 
+          if (!isSpecial)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 22),
+              tooltip: 'Remove Contact',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              onPressed: () => _confirmDeleteContact(contact),
+            ),
           // Call Button
           IconButton(
             icon: const Icon(Icons.phone_rounded, color: Color(0xFFE91E63), size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
             onPressed: () {
               makePhoneCall(contact['phone'], context);
             },
@@ -460,6 +470,61 @@ class _TrustedContactsScreenState extends State<TrustedContactsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteContact(Map<String, dynamic> contact) async {
+    final name = contact['name']?.toString() ?? 'Contact';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: const [
+            Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+            SizedBox(width: 8),
+            Text('Remove Contact?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to remove "$name" (${contact['phone']}) from your Emergency Contacts?\n\nThey will no longer receive emergency alerts when SOS is triggered.',
+          style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : const Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Remove', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() {
+        _contactsList.removeWhere((c) => c['name'] == contact['name'] && c['phone'] == contact['phone']);
+      });
+      await _persistContacts();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFFEF4444),
+            content: Text('✓ "$name" removed from Emergency Contacts'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   void _showAddContactDialog(BuildContext context, bool isDark) {

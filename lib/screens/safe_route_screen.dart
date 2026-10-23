@@ -582,7 +582,7 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
             'id': 0,
             'name': 'Route 1: ⚡ Fastest Route',
             'subtitle': 'சீக்கிரமாக செல்லும் வழி • Direct High-Traffic Transit',
-            'badge': 'Fastest (சீக்கிரம்)',
+            'badge': '⚡ Fastest',
             'time': '${math.max(2, (durationMinutes * 0.85).round())} min',
             'distance': '${distanceKm.toStringAsFixed(1)} km',
             'score': '89 / 100',
@@ -601,7 +601,7 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
             'id': 1,
             'name': 'Route 2: 🛡️ Safest Main Corridor',
             'subtitle': 'சிசிடிவி & மக்கள் நடமாட்டம் உள்ள முதன்மை வழி • 100% CCTV & Lit',
-            'badge': '98% Safest (பாதுகாப்பு)',
+            'badge': '🛡️ 98% Safest',
             'time': '$durationMinutes min',
             'distance': '${(distanceKm * 1.05).toStringAsFixed(1)} km',
             'score': '98 / 100',
@@ -620,7 +620,7 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
             'id': 2,
             'name': 'Route 3: 🚧 Hazard & Construction Bypass',
             'subtitle': 'தடைகள் தவிர்க்கும் வழி • Detour via Paved Arterials',
-            'badge': 'Hazard Free (தடை இல்லா வழி)',
+            'badge': '🚧 Hazard Free',
             'time': '${(durationMinutes * 1.15).round()} min',
             'distance': '${(distanceKm * 1.15).toStringAsFixed(1)} km',
             'score': '96 / 100',
@@ -1962,7 +1962,7 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
         ),
         const SizedBox(height: 5),
         SizedBox(
-          height: 62,
+          height: 68,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: routes.length,
@@ -1986,7 +1986,7 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  width: 165,
+                  width: 190,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
                     color: isSelected
@@ -2003,18 +2003,29 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             r['time'] as String,
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: isSelected ? routeColor : (isDark ? Colors.white : const Color(0xFF1E1B4B))),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: isSelected ? routeColor : (isDark ? Colors.white : const Color(0xFF1E1B4B)),
+                            ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                            decoration: BoxDecoration(color: routeColor, borderRadius: BorderRadius.circular(6)),
-                            child: Text(
-                              r['badge'] as String,
-                              style: const TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                decoration: BoxDecoration(color: routeColor, borderRadius: BorderRadius.circular(6)),
+                                child: Text(
+                                  r['badge'] as String,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -2022,6 +2033,8 @@ class _SafeRouteScreenState extends State<SafeRouteScreen>
                       const SizedBox(height: 2),
                       Text(
                         '${r['distance']} • ${r['score']}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 10.5, color: isDark ? Colors.white60 : const Color(0xFF6B7280)),
                       ),
                     ],
