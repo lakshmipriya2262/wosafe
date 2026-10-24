@@ -6,7 +6,7 @@ import '../models/sensor_reading.dart';
 class SensorProvider with ChangeNotifier {
   bool _isConnected = true; // Connected to wearable
   bool _isDistressTriggered = false;
-  int _currentBpm = 76;
+  int _currentBpm = 97;
   int _currentSpO2 = 98;
   double _stressScore = 22.0;
   String _deviceStatus = 'Connected (ESP32-C3 Wearable)';
@@ -29,10 +29,10 @@ class SensorProvider with ChangeNotifier {
   /// Live real-time background pulse simulation representing ESP32 telemetry stream
   void _startLiveVitalsMonitoring() {
     _telemetryTimer?.cancel();
-    _telemetryTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _telemetryTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (!_isDistressTriggered && _isConnected) {
-        // Natural resting fluctuation between 72 and 82 BPM
-        _currentBpm = 72 + _random.nextInt(10);
+        // Natural resting fluctuation between 96 and 98 BPM every 4 seconds
+        _currentBpm = 96 + _random.nextInt(3);
         _currentSpO2 = 97 + _random.nextInt(3);
         _stressScore = 18.0 + _random.nextDouble() * 12.0;
         _deviceStatus = 'Normal Vitals - ESP32 Active';
@@ -55,7 +55,7 @@ class SensorProvider with ChangeNotifier {
   /// Reset emergency state back to normal
   void resetEmergencyDistress() {
     _isDistressTriggered = false;
-    _currentBpm = 76;
+    _currentBpm = 97;
     _currentSpO2 = 98;
     _stressScore = 20.0;
     _deviceStatus = 'Normal Vitals - ESP32 Active';

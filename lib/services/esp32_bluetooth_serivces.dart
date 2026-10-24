@@ -96,10 +96,10 @@ class Esp32BluetoothService {
   /// Simulates continuous telemetry stream for demonstration in VS Code & Mobile
   void _startTelemetryStream() {
     _simulationTimer?.cancel();
-    _simulationTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _simulationTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_isConnected) {
-        // Normal baseline fluctuation
-        int bpm = 72 + _random.nextInt(8);
+        // Normal baseline fluctuation (96 - 98 BPM every 4 seconds)
+        int bpm = 96 + _random.nextInt(3);
         int spO2 = 97 + _random.nextInt(3);
         final reading = SensorReading.fromBpm(bpm, spO2);
         _sensorDataController.add(reading);

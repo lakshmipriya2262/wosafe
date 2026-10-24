@@ -40,7 +40,7 @@ class SmartwatchService extends ChangeNotifier {
   SmartwatchStatus _status = SmartwatchStatus.disconnected;
   SmartwatchDevice? _connectedDevice;
   int _batteryPercent = 92;
-  int _heartRateBpm = 76;
+  int _heartRateBpm = 97;
   int _spO2 = 98;
   bool _fallDetectionArmed = true;
   bool _isSosActive = false;
@@ -127,7 +127,7 @@ class SmartwatchService extends ChangeNotifier {
     _connectedDevice = device;
     _status = SmartwatchStatus.connected;
     _batteryPercent = 88 + _rand.nextInt(10);
-    _heartRateBpm = 74;
+    _heartRateBpm = 96 + _rand.nextInt(3);
     _spO2 = 98;
     _isSosActive = false;
 
@@ -159,8 +159,8 @@ class SmartwatchService extends ChangeNotifier {
       if (_status != SmartwatchStatus.connected) return;
 
       if (!_isSosActive) {
-        // Natural pulse fluctuations (70 - 79 bpm)
-        _heartRateBpm = 72 + _rand.nextInt(7);
+        // Natural pulse fluctuations between 96 and 98 BPM every 4 seconds
+        _heartRateBpm = 96 + _rand.nextInt(3);
         _spO2 = 97 + _rand.nextInt(3);
       }
       notifyListeners();
